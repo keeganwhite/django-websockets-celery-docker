@@ -39,5 +39,18 @@ services:
         depends_on:
             - redis
             - pgdatabase
+    celery_beat:
+      build:
+        context: .
+      command: celery -A celery_redis_websocket_app beat -l INFO
+      volumes:
+        - .:/usr/app/
+      environment:
+        - CELERY_BROKER=redis://redis:6379/0
+        - CELERY_BACKEND=redis://redis:6379/0
+      container_name: celery_beat_container
+      depends_on:
+        - redis
+        - pgdatabase
 volumes:
     pgdata:

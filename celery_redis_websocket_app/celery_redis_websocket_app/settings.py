@@ -30,6 +30,16 @@ SECRET_KEY = 'django-insecure-4ak-e!33kxkjkce#mb40i%wnczh0ppj4+la@n*i^n*j&1&jn2%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+ASGI_APPLICATION = "celery_redis_websocket_app.asgi.application"
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}
+
 ALLOWED_HOSTS = []
 
 CELERY_BROKER_URL=env("CELERY_BROKER_URL")
@@ -37,12 +47,16 @@ CELERY_BROKER_URL=env("CELERY_BROKER_URL")
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # custom apps
+    'chat',
+    'ping'
 ]
 
 MIDDLEWARE = [

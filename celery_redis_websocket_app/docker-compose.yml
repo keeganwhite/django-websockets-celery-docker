@@ -1,0 +1,41 @@
+services:
+    pgdatabase:
+        image: postgres
+        container_name: pgdatabase
+        environment:
+            - POSTGRES_DB=postgres
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+    redis:
+        image: redis:alpine
+        container_name: celery-redis
+    django:
+      build: .
+      container_name: django
+      command: >
+        bash -c "python manage.py makemigrations &&
+                 python manage.py migrate &&
+                 python manage.py runserver 0.0.0.0:8000"
+      volumes:
+        - .:/usr/app/
+      depends_on:
+        - redis
+        - pgdatabase
+    celery:
+        build: 
+            context: .
+        restart: always
+        command: celery -A celery_redis_websocket_app worker -l INFO
+        volumes:
+            - .:/usr/app/
+        environment:
+            - CELERY_BROKER=redis://redis:6379/0
+            - CELERY_BACKEND=redis://redis:6379/0
+        container_name: celery_container    
+        depends_on:
+            - redis
+            - pgdatabase
+volumes:
+    pgdata:
